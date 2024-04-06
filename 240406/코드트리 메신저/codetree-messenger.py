@@ -1,27 +1,22 @@
 #import sys
 #sys.setrecursionlimit(10**6)
+import copy
 
 class ChatRoom:
-    def __init__(self, parent, authority, alarm=True, nodes=[]):
+    def __init__(self, parent, authority, alarm, nodes):
         self.parent = parent
         self.authority = authority
         self.alarm = alarm
         self.nodes = nodes
 
 def build_tree(N, parents_authorities):
-    chat_rooms = [ChatRoom(None, 1, False)]  # 메인 채팅방
+    chat_rooms = [ChatRoom(None, 1, True, []) for _ in range(N+1)]  # 메인 채팅방
     for i in range(1, N + 1):
-        chat_rooms.append(ChatRoom(parents_authorities[i], parents_authorities[i+N]))
-    
-    for i in range(N+1):
-        parent = chat_rooms[i].parent
-        if parent == None:
-            continue
-        else:
-            if chat_rooms[parent].nodes == []:
-                chat_rooms[parent].nodes = [i]
-            else:
-                chat_rooms[parent].nodes += [i]
+        parent = parents_authorities[i]
+        chat_rooms[i].parent = parent
+        chat_rooms[i].authority = parents_authorities[i+N]
+        chat_rooms[parent].nodes = copy.copy(chat_rooms[parent].nodes)
+        chat_rooms[parent].nodes.append(i)
     return chat_rooms
 
 def switch_notification(chat_rooms, idx):
