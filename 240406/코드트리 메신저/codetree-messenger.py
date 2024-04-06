@@ -34,6 +34,8 @@ def swap_parents(chat_rooms, idx1, idx2):
     # 4, 5
     parent1 = chat_rooms[idx1].parent # 1
     parent2 = chat_rooms[idx2].parent # 2
+    if parent1 == parent2:
+        return
 
     chat_rooms[parent1].nodes = [node for node in chat_rooms[parent1].nodes if node != idx1] + [idx2]
     chat_rooms[parent2].nodes = [node for node in chat_rooms[parent2].nodes if node != idx2] + [idx1]
@@ -44,6 +46,7 @@ def count_notifiable(chat_rooms, idx, depth):
     global N, count
     if depth <= chat_rooms[idx].authority:
         if depth != 0:
+            #print("Node : ", idx)
             count+=1
     
     nodes = chat_rooms[idx].nodes
