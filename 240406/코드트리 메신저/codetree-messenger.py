@@ -35,16 +35,13 @@ def count_notifiable(chat_rooms, idx):
             if not_me == 1:
                 not_me -= 1
             else:
-                power -= chat_room.authority
+                power -= 1
 
             if chat_room.parent == idx: # 받으면 숫자 세봄
                 if power > 0:
                     count += 1
-                    #print(i, end=" ")
             if chat_room.parent == None: # 끝까지 올려봤는데도 없음
                 break 
-            if power < 0: # 파워 부족으로 못 올림
-                break
             chat_room = chat_rooms[chat_room.parent]
     print(count)
     return 
