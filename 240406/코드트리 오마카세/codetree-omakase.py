@@ -34,59 +34,23 @@ def Rotate(gap):
         
         sushi_belt = result # 회전시키기!
     eat() # 먹기!
-    #print("========================================")
-    #print(sushi_belt)
-    #print(people)
-    #print("========================================")
     return 
 
 def Rule1(q): # 100 t x name
     global sushi_belt
     x = int(q[2]); name = q[3]
-
-    cnt = 0; res = []
-    if people[x] != []: # 사람이 앉아있고 그대로 같은 이름이면 바로 쳐먹기
-        if name == people[x][0]: # 이름 있음 ㅈ댐 ㅋㅋ
-            cnt += 1
-            people[x][1] -= cnt
-            if people[x][1] == 0: # 다 먹었으면 비우기
-                people[x] = [] 
-        else: # 없음
-            sushi_belt[x].append(name) # 없으면 올리기
-    else:
-        sushi_belt[x].append(name)
-    
+    sushi_belt[x].append(name)
     return
 
 def Rule2(q): # 200 t x name n
     global sushi_belt, people
     x = int(q[2]); name = q[3]; n = int(q[4])
     people[x] = [name, n] # x좌석에 사람 앉힘. n개 쳐먹음
-    
-    # 앉은 즉시 있으면 바로 쳐먹기
-    cnt = 0; res = [] # 숫자세기, 이름 다른 나머지
-    for j in range(len(sushi_belt[x])):
-        if name == sushi_belt[x][j]: # 이름 같으면 바로 먹기
-            cnt += 1
-        else:
-            res.append(sushi_belt[x][j])
-    people[x][1] -= cnt # 먹은 수 빼기
-    sushi_belt[x] = res # 먹은거 빼기
-    if people[x][1] == 0: # 다 먹었으면 비우기
-        people[x] = [] 
-    #print("========================================")
-    #print(sushi_belt)
-    #print(people)
-    #print("========================================")
     return
 
 def Rule3(q): # 300 t
     global L, sushi_belt, people
     s_num = 0; p_num = 0
-    #print("========================================")
-    #print(sushi_belt)
-    #print(people)
-    #print("========================================")
     for i in range(L): # 사람수, 스시 수 세기
         s_num += len(sushi_belt[i])
         if people[i] != []:
@@ -106,9 +70,9 @@ for _ in range(Q):
     Rotate(t-pri_t) # 시간 차만큼 돌려돌려
 
     if rule == 100: # 100 t x name
-        Rule1(q)
+        Rule1(q); eat()
     elif rule == 200: # 200 t x name n
-        Rule2(q)
+        Rule2(q); eat()
     else: # 300 t
         Rule3(q)
     
