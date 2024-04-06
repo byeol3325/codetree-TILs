@@ -36,7 +36,9 @@ def count_notifiable(chat_rooms, idx):
                 not_me -= 1
             else:
                 power -= 1
-
+            
+            if power <= 0: # 더 못들어감
+                break
             if chat_room.parent == idx: # 받으면 숫자 세봄
                 if power > 0:
                     count += 1
