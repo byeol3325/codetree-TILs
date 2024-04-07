@@ -32,36 +32,47 @@ for i in range(M):
     stores[i] = [y-1,x-1] # 격자 맞추기. 1,1이 아닌 0,0에서 시작
 fin_ = [0] * M # 그 사람 다 끝났는지 확인
 start_ = [0] * M # 각 사람들 어디서 스타트하는지. m store가기 위한 사람들
-
-people = deque() # person : (x,y, num, end) end == 1이면 끝 or 없애기?
+people = deque() # person : (x,y, num) 다하면 없애기
 
 dy = [-1,0,0,1]; dx = [0,-1,1,0] # 상좌우하 우선순위
-def Go(people):
-    global matrix, stores
-    n_people = deque()
-    while people:
+check_mov = [[[0]*M for _ in range(N)] for _ in range(N)]
+def Go():
+    global matrix, stores, people, fin_, check_mov
+    n_people = len(people)
+    for _ in range(n_people):
         y, x, num = people.popleft()
+        if fin_[num] == 1: # 끝난놈들은 빼기
+            continue
         #print("Before : ", y, x, num)
         #print("STORE : ", stores[num-1])
-        min_idx = -1; min_d = float("inf")
+        #print("PEOPLE : ", y, x, num, stores[num])
+        #dis = abs(y-stores[num][0]) + abs(x-stores[num][1])
         #어디로 갈지 정하기
         for i in range(4):
             ny = y + dy[i]; nx = x + dx[i]
-            if 0<=ny<N and 0<=nx<N and matrix[ny][nx] == 2: # 못가는 곳임 ㅅㄱ (basecamp시작 or store 도착)
+            if 0<=ny<N and 0<=nx<N: # 안에 있는지
+                pass
+            else: # 없으면 나가잇!
                 continue
-        
-            nd = abs(ny-stores[num][0]) + abs(nx-stores[num][1]) #최단거리로
-            if min_d > nd:
-                min_d = nd
-                min_idx = i
+            
+            if matrix[ny][nx] == 2: # 못가는 곳임 ㅅㄱ (basecamp시작 or store 도착)
+                continue
+            
+            if check_mov[ny][nx][num] == 0: # 갈 수 있는데
+                if stores[num] == [ny, nx]: # 도착한거임
+                    matrix[ny][nx] = 2 # 이제 못지나감
+                    fin_[num] = 1 # 다 끝
+                    break
+                people.append([ny, nx, num]) # 일단 이동할 수 있는 곳들 정리
+                check_mov[ny][nx][num] = 1 # 방문해봄
+            #nd = abs(ny-stores[num][0]) + abs(nx-stores[num][1]) # 거리 비교해야함
+            #print("Here : ", dis, nd)
+            #if dis > nd: # 짧은 곳 있으면 거기로 바로 ㄱ
+            #    people.append([ny, nx, num])
+            #    break
+            #people.append([ny, nx, num]) # 갈데가 없으니 일단 이동할 수 있는 것들 정리
             #print("AFTER : ", ny, nx, nd)
-        
-        ny = y+dy[min_idx]; nx = x+dx[min_idx]
-        if min_d == 0: #도착한거임
-            matrix[ny][nx] = 2 #이제 못지나감
-            continue
-        n_people.append([ny, nx, num])
-    return n_people
+    return
 
 def Find_camp():
     global base_camps, stores, start_, N, M, matrix
@@ -103,22 +114,28 @@ Find_camp() # 각자 어디서 시작할지 위치 찾기
 time_ = 0
 while True:
     # 일단 m초까지 실행해서 모든 사람 있도록.
-    time_ += 1 # 1초 실행
-
-    people = Go(people) # 사람들 대이동 ㄷㄷ
+    Go() # 사람들 대이동 ㄷㄷ
     
+    time_ += 1
     if time_ <= M: # m초전까지는 사람들 계속 들어옴
         # 어느 베이스캠프에서 시작할지 정하기
         person = start_[time_-1]
         matrix[person[0]][person[1]] = 2 # 추가되면 못가는곳으로 바꾸기
         people.append(person + [time_-1]) # 사람 추가됨
+        check_mov[person[0]][person[1]][time_-1] = 1
     
     # 시간 m지나고 people 비면 finish
-    if time_ > M and len(people) == 0: # 베이스캠프와 편의점 위치가 겹치지 않으므로 최소 시간은 m보다 큼
+    if len(people) == 0 or sum(fin_) == M: # 베이스캠프와 편의점 위치가 겹치지 않으므로 최소 시간은 m보다 큼
         break
     
-    #if time_ == 7:
+    #print("TIME : ", time_)
+    #for i in range(N):
+    #    print(matrix[i])
+    #print(people)
+    #if time_ == 55:
     #    print(people)
-    #    break
-
+    #    print(fin_)
+        #for i in range(N):
+        #    print(matrix[i])
+        break
 print(time_)
