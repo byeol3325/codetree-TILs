@@ -1,96 +1,139 @@
-# n번 사람은 n분에 각자 베이스캠프에서 출발하여 편의점으로
-# 총 m명이 빵 구하기
-# 출발 전 격자 밖에 있음. 목표하는 편의점 모두 다름
-
-# 순서대로 진행됨
-# rule 1. 모두 본인이 가고 싶은 편의점 향해서 1칸. 상좌우하 우선순위
-#         최단거리란 상하좌우로 최소칸
-# rule 2. 편의점 도착시 편의점에서 멈춤. 이때부터 다른 사람들은 해당 편의점 칸 못 지나감
-# rule 3. 현재 t분이고 t <= m을 만족한다면 t 번 사람은 자신이 가고 싶은 편의점과 가장 가까이 있는 베이스캠프에 들어감
-#         가까운 베이스캠프가 여러가지 경우 행이 작고 열이 작은 베이스캠프로
-#         t번 사람이 베이스 캠프로 이동하는데 시간이 전혀 소요되지 않음
-#         이때부터 해당 베이스캠프 칸 지날 수 없음. t번 사람이 편의점 향해 움직이기 시작했더라도 해당 베이스캠프는 지나갈 수 없음
-
-import sys
-input = sys.stdin.readline
-
 from collections import deque
 
-N, M = map(int, input().split())
-matrix = [list(map(int, input().split())) for _ in range(N)]
-base_camps = []
-for i in range(N):
-    for j in range(N):
-        if matrix[i][j] == 1:
-            base_camps.append([i,j])
+n,m = map(int, input().split()) #격자크기, 사람수
+arr = [[0 for _ in range(n+1)]] #격자 정보
+base = []
 
-stores = [list(map(int, input().split())) for _ in range(M)]
-people = deque() # person : (x,y, num, end) end == 1이면 끝 or 없애기?
+for i in range(1, n+1):
+    temp = [0]+list(map(int, input().strip().split()))
+    for j in range(1, n+1):
+        if temp[j]==1:
+            base.append((i,j))
+    arr.append(temp)
 
-dy = [-1,0,0,1]; dx = [0,-1,1,0] # 상좌우하 우선순위
-def Go(people):
-    global matrix, stores
-    n_people = deque()
-    while people:
-        y, x, num = people.popleft()
-        #print("Before : ", y, x, num)
-        #print("STORE : ", stores[num-1])
-        min_idx = -1; min_d = float("inf")
-        #어디로 갈지 정하기
+store = [list(map(int, input().strip().split())) for _ in range(m)]
+
+cant_go = [[0 for _ in range(n+1)] for _ in range(n+1)]
+
+
+dx = [-1, 0, 0, 1]
+dy = [0, -1, 1, 0] # 위, 왼, 오, 아
+
+# 각 편의점과 각 베이스와 거리 구하기
+def store_base(x, y, bx, by):
+    q = deque()
+    visited = [[0 for _ in range(n+1)] for _ in range(n+1)]
+
+    q.append((x, y))
+    visited[x][y] = 1
+
+    while q:
+        px, py = q.popleft()
+        if px == bx and py == by:
+            return visited[px][py]-1
         for i in range(4):
-            ny = y + dy[i]; nx = x + dx[i]
-            if 0<=ny<N and 0<=nx<N and matrix[ny][nx] == 2: # 못가는 곳임 ㅅㄱ (basecamp시작 or store 도착)
-                continue
-        
-            nd = abs(ny-stores[num-1][0]) + abs(nx-stores[num-1][1]) #최단거리로
-            if min_d > nd:
-                min_d = nd
-                min_idx = i
-            #print("AFTER : ", ny, nx, nd)
-        
-        ny = y+dy[min_idx]; nx = x+dx[min_idx]
-        if min_d == 0: #도착한거임 덜덜
-            matrix[ny][nx] = 2 #이제 못지나감
-            continue
-        n_people.append([ny, nx, num])
-    
-    return n_people
+            nx, ny = px+dx[i], py+dy[i]
+            if 1<=nx<n+1 and 1<=ny<n+1 and not visited[nx][ny] and not cant_go[nx][ny]:
+                visited[nx][ny] = visited[px][py]+1
+                q.append((nx,ny))
 
-def Find_camp(num): #num에 time으로 들어올거임
-    global base_camps, stores
-    store = stores[num-1] # num에 맞는 store 위치
-    store[0]-=1; store[1]-=1; # 격자 맞춰줘야함
 
-    distances = [] # 최소거리 구하기 위해 모든 거리 구하기
-    for bc in base_camps:
-        dist = abs(bc[0] - store[0]) + abs(bc[1] - store[1])
-        distances.append(dist)
-    
-    min_dis = min(distances) # 최소거리
-    #최소거리 여러개인지 확인, base_camps(idx), idx
-    min_dis_loc = [base_camps[i]+[i] for i, d in enumerate(distances) if d == min_dis]
-    min_dis_loc.sort() # 여러개면 우선순위
-    base_camps.pop(min_dis_loc[0][2])
-    return min_dis_loc[0][:2] + [num] # loc
+    return -1
 
-time_ = 0
-while True:
-    # 일단 m초까지 실행해서 모든 사람 있도록.
-    time_ += 1 # 1초 실행
+# 편의점과 가장 가까운 베이스 구하기
+def find_base(sx, sy):
+    temp = []
 
-    people = Go(people) # 사람들 대이동 ㄷㄷ
+    # 모든 베이스에 대해 store_base 함수 호출해서 거리를 구한다음에 규칙에 맞게 정렬해준다
+    for bx, by in base:
+        if not cant_go[bx][by]:
+            dis = store_base(sx, sy, bx, by)
+            
+            if dis!=-1:
+                temp.append((dis, bx, by))
     
-    if time_ <= M: # m초전까지는 사람들 계속 들어옴
-        # 어느 베이스캠프에서 시작할지 정하기
-        person = Find_camp(time_); matrix[person[0]][person[1]] = 2 #어디서 시작할지 정하고 거기 이제 못감 ㅅㄱ
-        people.append(person)
-    
-    # 시간 m지나고 people 비면 finish
-    if time_ > M and len(people) == 0: # 베이스캠프와 편의점 위치가 겹치지 않으므로 최소 시간은 m보다 큼
-        break
-    
-    #if time_ == 7:
-    #    print(people)
-    #    break
+    if temp:
+        temp.sort(key=lambda x:(x[0], x[1], x[2]))
+        return temp[0][1], temp[0][2]
+    else:
+        return -1, -1
 
-print(time_)
+# 사람위치에서부터 편의점 위치까지 최단거리로 이동할 수 있는 "다음 홉"을 구하는 함수
+def go_store(x, y, sx, sy, d):
+    q = deque()
+    visited = [[0 for _ in range(n+1)] for _ in range(n+1)]
+    visited[x][y] = 1
+
+    # 다음 홉부터 탐색 진행
+    nx, ny = x+dx[d], y+dy[d]
+    first_nx, first_ny = nx, ny
+    if 1<=nx<n+1 and 1<=ny<n+1 and not cant_go[nx][ny]:
+        visited[nx][ny] = 2
+        q.append((nx, ny))
+    # 다음 홉이 갈 수 없는 곳이면 sys.maxsize를 dis로 반환
+    else:
+        return sys.maxsize, 0, 0
+
+    while q:
+        px, py = q.popleft()
+        # 편의점까지 도착했으면 거리, 다음홉x, y를 반환
+        if px==sx and py==sy:
+            return visited[px][py]-1, first_nx, first_ny
+        for i in range(4):
+            nx, ny = px+dx[i], py+dy[i]
+
+            if 1<=nx<n+1 and 1<=ny<n+1 and not cant_go[nx][ny] and not visited[nx][ny]:
+                visited[nx][ny] = visited[px][py]+1
+                q.append((nx, ny))
+
+    # 해당 방향을 다음홉으로 삼았을 때 편의점까지 갈 수 없는 경우
+    return sys.maxsize, 0, 0
+
+pos_list = [[] for _ in range(m)] # 사람의 현위치
+t = 1 # 시간
+
+# 가장 처음은 3단계부터 시작한다 (그전에는 맵에 아무도 없으니까)
+sx, sy = store[0] 
+bx, by = find_base(sx, sy)
+pos_list[0] = [bx, by]
+cant_go[bx][by] = 1
+
+stop = [0 for _ in range(m)] # 편의점에 도착한 사람은 stop해줌
+count = 0 #편의점 도달한 사람 수
+while count < m:
+    t += 1
+    temp_go = [(0,0) for _ in range(m)] # 사람별로 갈 다음 홉
+    for i in range(m):
+        # 현재 맵에 i번째 사람이 있고 편의점까지 도착하지 않은 경우
+        if pos_list[i] and not stop[i]:
+            sx, sy = store[i]
+            x, y = pos_list[i]
+            min_dis = sys.maxsize
+            min_fx, min_fy = 0, 0
+            # 각 방향 별로 거리를 구해서 최단거리로 이동할 수 있는 방향(다음 홉 위치)을 구한다
+            for d in range(4):
+                dis, fx, fy = go_store(x, y, sx, sy, d)
+                if min_dis > dis:
+                    min_dis = dis
+                    min_fx, min_fy = fx, fy
+
+            temp_go[i] = (min_fx, min_fy)
+    
+    for i, (fx, fy) in enumerate(temp_go):
+        # 만약 한칸 이동했는데 도착한 경우 => 이동할 수 없는 칸으로 바꾸고 그 사람 stop시키고 도착완료한 사람 수 up
+        if store[i][0]==fx and store[i][1]==fy:
+            pos_list[i] = [fx, fy]
+            cant_go[fx][fy] = 1
+            stop[i] = 1
+            count += 1
+        # 도착한 거 아니면 그냥 이동만
+        else:
+            pos_list[i] = [fx, fy]
+
+    # 3단계
+    if t<=m:
+        bx, by = find_base(store[t-1][0], store[t-1][1])
+        pos_list[t-1] = [bx, by]
+        cant_go[bx][by] = 1
+
+print(t)
