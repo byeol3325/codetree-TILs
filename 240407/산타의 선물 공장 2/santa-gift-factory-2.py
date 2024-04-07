@@ -33,25 +33,21 @@ input = sys.stdin.readline
 Q = int(input()) # Q 줄 명령
 
 def Setting(q):
-    global belts, max_belts
+    global belts
     n = q[1]
     m = q[2]
     belts = [[] for _ in range(q[1]+1)] # 0, 1, 2, ... n-1
-    max_belts = [[] for _ in range(q[1]+1)]
     for i in range(1, m+1):
-        hq.heappush(belts[q[i+2]], i)
-        hq.heappush(max_belts[q[i+2]], -i)
-    #print(belts)
-    #print(max_belts)
+        belts[q[i+2]].append(i)
+    for i in range(n):
+        belts[i+1].sort()
     return
 
 def Rule2(q):
-    global belts, max_belts
+    global belts
     m_src = q[1]; m_dst = q[2]
-    n = len(belts[m_src])
-    for _ in range(n):
-        hq.heappush(belts[m_dst], hq.heappop(belts[m_src]))
-        hq.heappush(max_belts[m_dst], hq.heappop(max_belts[m_src]))
+    belts[m_dst] = belts[m_src] + belts[m_dst]
+    belts[m_src] = []
     print(len(belts[m_dst]))
     return
 
@@ -60,34 +56,28 @@ def Rule2(q):
 #   없으면 있는 곳에서만 옮기기 
 #    옮긴 뒤에 m_dst벨트에 있는 선물 갯수 출력
 def Rule3(q):
-    global belts, max_belts
+    global belts
     m_src = q[1]; m_dst = q[2]
     n1 = len(belts[m_src]); n2 = len(belts[m_dst])
-    src = []; max_src = [];
-    dst = []; max_dst = [];
-    if n1 != 0:
-        n1_front = hq.heappop(belts[m_src])
-        hq.heappush(dst, n1_front)
-        hq.heappush(max_dst, -n1_front)
+    src = []
+    dst = []
+    if n1 == 0 and n2 == 0:
+        print(0)
+        return
     
-    if n2 != 0:
-        n2_front = hq.heappop(belts[m_dst])
-        hq.heappush(src, n2_front)
-        hq.heappush(max_src, n2_front)
+    if n1 == 0:
+        src = [belts[m_dst][0]]
+        dst = belts[m_dst][1:]
     
-    for i in range(n1-1):
-        n1_front = hq.heappop(belts[m_src])
-        hq.heappush(src, n1_front)
-        hq.heappush(max_src, -n1_front)
+    if n2 == 0:
+        src = belts[m_src][1:]
+        dst = [belts[m_src][0]]
     
-    for i in range(n2-1):
-        n2_front = hq.heappop(belts[m_dst])
-        hq.heappush(dst, n2_front)
-        hq.heappush(max_dst, -n2_front)
+    if n1 != 0 and n2 != 0:
+        src = [belts[m_dst][0]] + belts[m_src][1:]
+        dst = [belts[m_src][0]] + belts[m_dst][1:]
     
-    belts[m_src] = src; max_belts[m_src] = max_src
-    belts[m_dst] = dst; max_belts[m_dst] = max_dst
-
+    belts[m_src] = src; belts[m_dst] = dst
     print(len(belts[m_dst]))
     return
 
@@ -97,7 +87,7 @@ def Rule3(q):
 def Rule4(q): # 400 m_src m_dst
     global belts, max_belts
     m_src = q[1]; m_dst = q[2]
-    n1 = len(belts[m_src]); n2 = len(belts[m_dst])
+    n1 = len(belts[m_src])
     
     if n1 < 2:
         return
@@ -105,43 +95,31 @@ def Rule4(q): # 400 m_src m_dst
     mov_num = n1//2
     #if n1%2 == 1:
     #    mov_num += 1
+    src = belts[m_src][mov_num:]
+    dst = belts[m_src][:mov_num] + belts[m_dst]
     
-    for _ in range(mov_num):
-        n1_front = hq.heappop(belts[m_src])
-        hq.heappush(belts[m_dst], n1_front)
-        hq.heappush(max_belts[m_dst], -n1_front)
-    
-    max_src = []
-    for v in belts[m_src]:
-        hq.heappush(max_src, -v)
-    
-    max_belts[m_src] = max_src
+    belts[m_src] = src; belts[m_dst] = dst
     print(len(belts[m_dst]))
     return
 
 def Rule5(q): # 500 p_num
     global belts, max_belts
-    idx = 0
+    idx = 0; p_idx = -1
     for i, b in enumerate(belts):
         if q[1] in b:
-            idx = i; break
+            idx = i
+            break
     
+    p_idx = belts[idx].index(q[1])
+    
+    n = len(belts[idx])
     a = -1; b = -1;
-    src = copy.deepcopy(belts[idx]); max_src = copy.deepcopy(max_belts[idx])
-
-    while belts[idx]:
-        now = hq.heappop(belts[idx])
-        if now == q[1]:
-            break
-        a = now
+    if p_idx != 0:
+        a = belts[idx][p_idx-1]
     
-    while max_belts[idx]:
-        now = hq.heappop(max_belts[idx])
-        if -now == q[1]:
-            break
-        b = -now
-    
-    belts[idx] = src; max_belts[idx] = max_src
+    if p_idx != n-1:
+        b = belts[idx][p_idx+1]
+    #print("HERE A B :", idx, p_idx, a, b)
     print(a + 2*b)
     return
 
@@ -149,15 +127,18 @@ def Rule6(q): # 600 b_num
     if len(belts[q[1]]) == 0:
         print(-3)
         return
-    src = copy.deepcopy(belts[q[1]]); max_src = copy.deepcopy(max_belts[q[1]])
-    a = hq.heappop(belts[q[1]]); b = -hq.heappop(max_belts[q[1]])
-    belts[q[1]] = src; max_belts[q[1]] = max_src
+    a = belts[q[1]][0]; b = belts[q[1]][-1]
     print(a + 2*b + 3*len(belts[q[1]]))
     return
 
-belts = []; max_belts = [];
+belts = []
+tip = 100; stop = 100
 for i in range(Q):
     q = list(map(int, input().split()))
+    if i >= tip:
+        print("================== Time : ", i, "==================")
+        print(q)
+
     if q[0] == 100: # 100 n m B_NUM1 B_NUM2 ... B_NUMm 항상 처음 명령. 출력할값 없음
         Setting(q)
         #print(belts[1:])
@@ -188,4 +169,9 @@ for i in range(Q):
         #print(belts[1:])
         #print(max_belts[1:])
     
+    if i >= tip:
+        print(belts[1:])
+        
+    if i == stop:
+        break
     #print(q)
