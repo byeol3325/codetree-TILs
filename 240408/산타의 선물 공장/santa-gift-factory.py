@@ -1,211 +1,197 @@
-# m개 벨트. 벨트 위에 n/m개 물건들 놓아 총 n개 물건 준비
-# 각 물건에는 고유한 번호ID와 무게W가 적혀있음
-# 번호는 무조건 다르고 무게는 같을 수 있음
+class Box:
+    # 연결리스트 노드 생성자에 id와 무게를 추가했다.
+    def __init__(self, box_id, weight):
+        self.box_id = box_id
+        self.weight = weight
+        self.prev_box = None
+        self.next_box = None
+    
+    # 노드의 앞과 뒤 주소를 넣어주는 메서드
+    def set_prev(self, prev_box):
+        self.prev_box = prev_box
+    def set_next(self, next_box):
+        self.next_box = next_box
+    
+    # 앞의 노드와의 연결을 끊는 메서드
+    def cut_prev(self):
+        if self.prev_box == None:
+            return
+        self.prev_box.next_box = None
+        self.prev_box = None
+    
+    # 연결리스트 중간에서 노드를 빼오는 메서드    
+    def take_out(self):
+        if self.next_box:
+            self.next_box.prev_box = self.prev_box
+        if self.prev_box:
+            self.prev_box.next_box = self.next_box
+            
+        self.next_box = None
+        self.prev_box = None
 
-# 물건하차
-# 산타가 원하는 상자의 최대 무게인 w_max. 
-# 1번부터 m번까지 벨트 보면서 "맨 앞"에 있는 선물 중 선물 무게가 w_max이하면 하차. 그렇지 않으면 맨 뒤로
-# 벨트에 있던 상자가 빠지면 한칸씩 내려와야함
-# 1회 움직. 내려온 상자들 무게 총합
+class Belt:
+    # 첫 상자와 끝 상자를 가리킬 변수와, 
+    # 상자 ID 검색을 빠르게 하기 위한 딕셔너리 box_dict, 
+    # 벨트 고장 여부를 저장할 broken을 선언한다.
+    def __init__(self):
+        self.first_box = None
+        self.last_box = None
+        self.box_dict = dict()
+        self.broken = False
+    
+    # 벨트 끝에 상자를 추가하는 메서드. 
+    # 끝 상자와 추가할 상자를 이어주고, 벨트의 끝 상자를 추가할 상자로 바꾼다.
+    # 상자가 없을 때 호출 된다면, 첫 상자를 해당 상자로 설정한다.
+    def add_box(self, this_box):
+        self.box_dict[this_box.box_id] = this_box
 
-# 물건 제거 r_id
-# 제거하기 위한 물건 고유번호 r_id. 상자가 놓여져있는 벨트에서 상자 제거. 뒤에 있던 상자들은 앞으로 한칸씩
-# 그러한 상자가 있으면 r_id, 없으면 -1 출력
-
-# 물건 확인. f_id
-# 해당 상자 위에 있는 모든 상자를 앞으로 가져옴
-# 없으면 -1 있으면 벨트 번호 출력()
-
-# 벨트 고장. b_num
-# b_num 벨트 고장. 다시 사용X. 
-# 모든 벨트가 망가지는 경우 없음
-# 1 2 3 4 5 ... m 1 2 .. 순서로 탐색. 그대로 옮기기
-# b_num이 이미 망가져있으면 -1, 아니면 b_num 출력
-
-Q = int(input())
-# 100 n m ID1 ID2 ... IDn W1 W2 ... Wn //  3 + n + n 
-settings = list(map(int, input().split()))
-n, m = settings[1], settings[2]
-
-# 아이템들 벨트 정리
-belts = [[] for _ in range(m+1)]; #print(belts)
-weights = {}
-for i in range(n):
-    ID = settings[i+3]
-    W = settings[i+3+n]
-    idx = i//(n//m) + 1
-    #print(i, idx)
-    belts[idx].append(ID)
-    weights[ID] = W
-#print(belts[1:])
-
-on = [1] * (m+1) # 고장나면 0
-head = [0] * (m+1)
-tail = [0] * (m+1)
-nums = [n//m] * (m+1)
-#print(head)
-before = {}
-after = {}
-
-for i in range(1, m+1):
-    num_item = len(belts[i])
-    head[i] = belts[i][0]
-    tail[i] = belts[i][-1]
-    for j in range(num_item):
-        #print(belts[i][j])
-        item = belts[i][j]
-        #print(item)
-        if j == 0: # 맨 앞은 after만 있음
-            after[item] = belts[i][j+1]
-            before[item] = 0
-        elif j == num_item-1: # 맨 뒤는 before만 있음
-            after[item] = 0
-            before[item] = belts[i][j-1]
+        if not self.first_box:
+            self.first_box = this_box
+        
+        if self.last_box:
+            self.last_box.set_next(this_box)
+            this_box.set_prev(self.last_box)
+        
+        self.last_box = this_box
+    
+    # 벨트 가장 앞 상자를 빼는 메서드. 두 번째 상자를 첫 상자로 바꾸고, 앞 상자와의 연결을 끊어준다.
+    # 상자가 1개 일 때 호출 된다면 끝 상자도 None으로 바꿔준다.
+    def pop_box(self):
+        box_to_pop = self.first_box
+        self.first_box = box_to_pop.next_box
+        if self.first_box:
+            self.first_box.cut_prev()
         else:
-            after[item] = belts[i][j+1] # 뒤
-            before[item] = belts[i][j-1] # 앞 
+            self.last_box = None
+        
+        del self.box_dict[box_to_pop.box_id]
 
-def Head_to_Tail(i, w):
-    # 올리면 0, 반환시 무게
-    head_ = head[i]; tail_ = tail[i]; next_ = after[head_]
-    result = 0
+        return box_to_pop
 
-    if weights[head_] <= w: # 무게 이하면 빼기
-        result += weights[head_]
-        weights[head_] = -1 # 이제 없음
-        before[next_] = 0
-        head[i] = next_ # head 바꿔주기
-        nums[i] -= 1 # 수 하나 빼기
-    else: # 아니면 올리기
-        before[next_] = before[head_] # next_의 앞에는 이전 대가리 앞
-        before[head_] = tail_ # head_는 올라가니까 이전 tail_이 됨
-        after[head_] = 0 # head_는 올라가서 after이 0
-        after[tail_] = head_ # 이전 tail_의 after는 새로운 head
+class Factory:
+    # 100 연산이자 생성자이다. 매개변수로 100을 제외한 모든 숫자를 한번에 받는다. 
+    # N과 M을 분리시키고, 한 벨트당 몇 개의 상자가 들어갈지 계산해 counts 에 저장한다.
+    # M개의 벨트를 만들고, presents 에서 counts 만큼의 연속된 정보로 Box를 생성해 벨트에 넣어주었다.
+    def __init__(self, args):
+        N, M, *presents = args
+        counts = N // M
+        self.belts = [Belt() for _ in range(M)]
 
-        head[i] = next_
-        tail[i] = head_
+        for idx, belt in enumerate(self.belts):
+            for num in range(idx * counts, (idx+1) * counts):
+                belt.add_box(Box(presents[num], presents[num+N]))
     
-    return result
+    # 200 연산이다. max_weight을 매개변수로 받고, 기본 반환값은 0이다.
+    # 벨트를 모두 돌면서 first_box가 있는 경우, pop_box 메서드로 일단 빼온다.
+    # 빼온 상자가 max_weight 이하면 result에 무게를 더하고,
+    # 아니라면 add_box 메서드로 뒤에 그대로 다시 추가해주면 된다.
+    def unload(self, max_weight):
+        result = 0
 
-def Rule2(q): # 200 w_max
-    w_max = q[1]
-    total = 0
-    for i in range(1, m+1):
-        if nums[i] == 0: # 없으면 다음 벨트
-            continue
-        total += Head_to_Tail(i, w_max)
-    print(total)
-    return
+        for belt in self.belts:
+            if belt.first_box:
+                popped_box = belt.pop_box()
+                if popped_box.weight <= max_weight:
+                    result += popped_box.weight
+                else:
+                    belt.add_box(popped_box)
+        
+        return result
+        
+    # 300 연산이다. 제거할 id를 매개변수로 받고, 기본 반환값은 -1이다.
+    # 벨트를 돌면서 딕셔너리에 id가 있는지 확인했다.
+    # id를 발견하면 해당 상자가 벨트의 처음, 끝 상자인지 확인해 처리하고,
+    # take_out 메서드로 연결 리스트에서 빼준다.
+    # 딕셔너리에서는 id로 제거해주면 된다.
+    def remove(self, remove_id):
+        result = -1
 
-# 물건하차
-# 산타가 원하는 상자의 최대 무게인 w_max. 
-# 1번부터 m번까지 벨트 보면서 "맨 앞"에 있는 선물 중 선물 무게가 w_max이하면 하차. 그렇지 않으면 맨 뒤로
-# 벨트에 있던 상자가 빠지면 한칸씩 내려와야함
-# 1회 움직. 내려온 상자들 무게 총합
-def Rule3(q): # 300 r_id
-    r_id = q[1]
-    if r_id not in weights or weights[r_id] == -1: # r_id가 없는 경우
-        print(-1)
-        return
+        for belt in self.belts:
+            if remove_id in belt.box_dict:
+                removed_box = belt.box_dict[remove_id]
+                if belt.first_box == removed_box:
+                    belt.first_box = removed_box.next_box
+                if belt.last_box == removed_box:
+                    belt.last_box = removed_box.prev_box
+                
+                removed_box.take_out()
+                result = removed_box.box_id
+                del belt.box_dict[removed_box.box_id]
+                break
+
+        return result
     
-    for i in range(1, m+1):
-        if if_inBelt_remove(i, r_id):
-            break
-    print(r_id)
-    return
+    # 400 연산이다. 찾을 id를 매개변수로 받고, 기본 반환값은 -1이다.
+    # 역시 벨트를 돌면서 상자를 찾는다. 반환 값이 벨트의 아이디(인덱스+1)라서 enumerate를 썼다.
+    # 상자를 찾으면, 그 위치가 벨트의 처음이 아닐 경우, 첫 상자와 끝 상자를 이어주고,
+    # 찾은 상자를 첫 상자로, 그 앞 상자를 끝 상자로 바꿔주고 둘의 연결을 끊으면 된다.
+    def find(self, find_id):
+        result = -1
 
-def if_inBelt_remove(i, r_id):
-    if nums[i] == 0:
-        return False
+        for belt_id, belt in enumerate(self.belts):
+            if find_id in belt.box_dict:
+                found_box = belt.box_dict[find_id]
 
-    now = head[i] # 초깃값
-    for _ in range(nums[i]):
-        if now == r_id:
-            head[i] = before[now] # head 바꾸기 head[2] = 19
-            # before[now],  before[19] = 0 after[19] = 25
-            after[before[now]] = after[now]
-            # after[now], before[25] = 19 after[25] = 0
-            before[after[now]] = before[now] # now의 after이 after의 before가 됨
-            weights[now] = -1 # 제거
-            nums[i] -= 1 # 수 줄이기
-            return True
-        if now == 0: # 끝남
-            return False
-        else:
-            now = after[now] # 다음꺼 탐색
-    return False
+                if belt.first_box != found_box:
+                    belt.first_box.set_prev(belt.last_box)
+                    belt.last_box.set_next(belt.first_box)
+                    belt.first_box = found_box
+                    belt.last_box = found_box.prev_box
+                    found_box.cut_prev()
+                
+                result = belt_id+1
+                break
 
-def Rule4(q): # 400 f_id
-    f_id = q[1]
-    if f_id not in weights or weights[f_id] == -1: # f_id가 없는 경우
-        print(-1)
-        return
-    
-    for i in range(1, m+1):
-        for _ in range(nums[i]):
-            Head_to_Tail(i, 0) # 순서 바꾸고
-            if head[i] == f_id:
-                print(i)
-                return
-    return
+        return result
 
-def Rule5(q): # 500 b_num
-    b_num = q[1]
-    if on[b_num] == 0: # 이미 망가져있음
-        print(-1)
-        return
-    on[b_num] = 0 # 망가뜨리고
-    t = -1 # 넘길곳 찾기
-    for i in range(m):
-        # m == 3
-        if on[(b_num+i)%m + 1] == 1:# 고장 X
-            t = (b_num+i)%m + 1
-            break
-    
-    s_head = head[b_num]; s_tail = tail[b_num]; head[b_num] = 0; tail[b_num] = 0
-    t_head = head[t]; t_tail = tail[t]
-    # t //// s 
-    tail[t] = s_tail
-    if t_head == 0:
-        head[t] = s_head
-        #before[s_head] = s_tail
-    
-    after[t_tail] = s_head
-    before[s_head] = t_tail
+    # 500 연산이다. 고장시킬 벨트의 아이디를 매개변수로 받고, 기본 반환값은 -1이다.
+    # 만약 이미 고장난 벨트가 아닐 경우, 반환 값을 벨트의 아이디로 바꾸고, 고장 상태를 True로 바꾼다.
+    # 그리고 그 위에 상자가 있을 경우, 고장 벨트 다음 벨트부터 차례로 돌며 정상 벨트를 찾고,
+    # 고장 벨트의 딕셔너리 내용을 정상 벨트 딕셔너리에 추가,
+    # 고장 벨트 첫 상자와 정상 벨트 끝 상자를 이어주고, 
+    # 정상 벨트 끝 상자를 고장 벨트 끝 상자로 바꿔주면 된다.
+    # 고장 벨트의 첫 상자와 끝 상자도 잊지 않고 초기화 시켜줘야 한다.
+    def die(self, belt_id):
+        result = -1
+        belt_id -= 1
 
-    nums[t] += nums[b_num]
-    nums[b_num] = 0
-    print(b_num)
-    return
+        if self.belts[belt_id].broken == False:
+            result = belt_id+1
+            broken_belt = self.belts[belt_id]
+            broken_belt.broken = True
 
+            if len(broken_belt.box_dict):
+                for idx in range(belt_id, belt_id + len(self.belts)):
+                    if self.belts[idx % len(self.belts)].broken == False:
+                        found_belt = self.belts[idx % len(self.belts)]
+                
+                        found_belt.box_dict.update(broken_belt.box_dict)
+                        broken_belt.box_dict = {}
 
-"""
-print("NUMS : ", nums[1:])
-print("HEAD : ", head[1:])
-print("TAIL : ", tail[1:])
-print("BEFORE : ", before)
-print("AFTER : ", after)
-print("WEIGHTS : ", weights)
-"""
-stop = -1
-for i in range(1, Q):
-    q = list(map(int, input().split()))
-    if i == stop:
-        print("TIME : ", i, ", ", q)
-    
-    if q[0] == 200: # 200 w_max
-        Rule2(q)
-    elif q[0] == 300: # 300 r_id
-        Rule3(q)
-    elif q[0] == 400: # 400 f_id
-        Rule4(q)
-    elif q[0] == 500: # 500 b_num
-        Rule5(q)
-    
-    if i == stop:
-        print("NUMS : ", nums[1:])
-        print("HEAD : ", head[1:])
-        print("TAIL : ", tail[1:])
-        print("BEFORE : ", before)
-        print("AFTER : ", after)
-        print("WEIGHTS : ", weights)
+                        found_belt.add_box(broken_belt.first_box)
+                        found_belt.last_box = broken_belt.last_box
+                        broken_belt.first_box = broken_belt.last_box = None
+                        break
+            
+        return result
+
+if __name__ == "__main__":
+
+    Q = int(input().strip())
+
+    # 첫 줄은 무조건 100 연산이므로, 해당 입력으로 Factory를 생성해준다.
+    query, *args = map(int, input().split())
+    factory = Factory(args)
+
+    # if else보다 효율적으로 연산을 수행하기 위해 딕셔너리로 만들었다.
+    queries = {
+        200: factory.unload,
+        300: factory.remove,
+        400: factory.find,
+        500: factory.die,
+    }
+
+    # 위의 딕셔너리로 호출한 연산을 수행한 후, 반환값을 그대로 출력하면 된다.
+    for _ in range(Q-1):
+        query, arg = map(int, input().split())
+        print(queries[query](arg))
