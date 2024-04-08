@@ -72,6 +72,7 @@ def Rule2(q):
     m_src, m_dst = q[1], q[2]
     num = nums[m_src]
     if num == 0: # 없으면 끝
+        print(nums[m_dst])
         return
 
     for i in range(num):
