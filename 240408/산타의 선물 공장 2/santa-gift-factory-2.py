@@ -76,18 +76,22 @@ def Rule2(q):
         return
     nums[m_dst] += num; nums[m_src] = 0
     
-    h = head[m_src]; head[m_src] = -1
-    t = tail[m_src]; tail[m_src] = -1
-    h_dst = head[m_dst]; before[h_dst] = t
-    before[h] = -1
-    after[t] = tail[m_dst]
+    h_src = head[m_src]; head[m_src] = -1 # src 정보 변경. head 없애고 head -1
+    t_src = tail[m_src]; tail[m_src] = -1 # src 정보 변경, tail 없애고 tail -1
 
-    head[m_dst] = h
-    if tail[m_dst] == -1:
-        tail[m_dst] = t
+    h_dst = head[m_dst] # dst head 정보
+    if h_dst != -1: # 만약 dst가 빈게 아니면
+        before[h_dst] = t_src # dst의 맨 앞 요소에 앞에 src 꼬리 붙임
+    before[h_src] = -1 # src head 앞에는 없음
+    after[t_src] = h_dst # src tail 뒤에는 dst h가 옴(비어있어도 됨)
 
+    head[m_dst] = h_src # dst head는 src head로
+    if tail[m_dst] == -1: # dst tail이 비어있었다면
+        tail[m_dst] = t_src # 꼬리로
+    #print("HHHHHHHHHHHHHHHHHH")
     print(nums[m_dst])
     return
+
 def Move(m_src, m_dst):
     item = tail[m_src]
     tail[m_src] = before[item] # m_src의 끝은 이제 item의 앞에 친구
@@ -159,8 +163,8 @@ def Rule6(q): # 600 b_num
     a = head[b_num]
     b = tail[b_num]
     c = nums[b_num]
-
-    print(a + 2*b + 3*c)
+    #print("HERE : ", a,b,c, a + 2*b + 3*c)
+    print(a+2*b+3*c)
     return
 
 stop = -1
@@ -169,8 +173,8 @@ for i in range(1, Q):
     if i == stop:
         print("TIME : ", i)
         print(q)
-        
-    elif q[0] == 200: # 200 m_src m_dst
+
+    if q[0] == 200: # 200 m_src m_dst
         Rule2(q)
         
     elif q[0] == 300: # 300 m_src m_dst
