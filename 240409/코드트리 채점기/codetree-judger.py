@@ -43,16 +43,16 @@ def Rule2(q): # 200 t p u. 대기 큐에 추가하면됨.
 #          만약 쉬고 있는 채점기가 없다면 요청 무시하고 넘어가기
 def Rule3(q): # 300 t. 채점해도되나 안되나 판별
     t = int(q[1])
-    if len(waiting_queue) == 0: # 비었음
+    if len(waiting_queue) == 0: # 큐가 다 비었음
         #print("IN RULE3, NO QUEUE.")
         return
 
     ### 안되는 조건
     task = waiting_queue[0] # p, start_time, [도메인, id]
-    start_time = task[1]
     domain = task[2][0]
 
     first_blank_ = -1 # 일단 제일 먼저 비어있는 계산기. 일단 기록.
+
     for i in range(1, N+1):
         if calculaters[i] == []:
             if first_blank_ == -1:
@@ -62,6 +62,9 @@ def Rule3(q): # 300 t. 채점해도되나 안되나 판별
             if domain == calculaters[i][2][0]: # 도메인 진행 중이라 불가능
                 return
     
+    if first_blank_ == -1: # 모든 계산기가 돌아가고 있음
+        return
+
     if domain in end_task: # 만약 종료한적이 있으면
         start, end = end_task[domain]
         if t < start + 3*(end-start): # t가 start + 3gap보다 작으면 부적절한 채점이라 의심돼서 채점이 불가능함
@@ -76,13 +79,18 @@ def Rule3(q): # 300 t. 채점해도되나 안되나 판별
 # rule 4. 채점 종료. t초에 J_id 채점기가 진행하던 채점이 종료. J_id 채점기는 다시 쉬는 상태
 #                 J_id번 채점기가 진행하던 채점이 없었다면 명령 무시
 # 400 t J_id : t초에 J_id번 채점기가 진행하던 채점이 종료
+end_task = {}
 def Rule4(q): # 400 t J_id
     t, J_id = int(q[1]), int(q[2])
 
     if calculaters[J_id] == []: # 명령무시. j_id 번에 채점하는게 없으면 무시.
         return
     
-    calculaters[J_id][-1] = t
+    start_time = calculaters[J_id][1]
+    end = t
+    domain = calculaters[J_id][2][0]
+    end_task[domain] = [start_time, end]
+    calculaters[J_id] = [] # 다 끝났음. 삭제.
     return
 
 # rule 5. 채점 대기 큐 조회. 시간 t에 채점 대기 큐에 있는 task 수 출력.
@@ -92,25 +100,12 @@ def Rule5(q):
     print(len(waiting_queue))
     return
 
-
-end_task = {}
-def check_fin(t):
-    for i in range(1, N+1):
-        if calculaters[i] == [] or calculaters[i][-1] == -1: # 비었거나 시간 배정 안됐으면 무시
-            continue
-        else: # calculator[i] = 우선순위(p), 들어온시간(t), [url/id], 종료시간
-            if calculaters[i][-1] <= t:
-                start_time = calculaters[i][1]
-                gap = calculaters[i][3]
-                domain = calculaters[i][2][0]
-
-                end_task[domain] = [start_time, gap]
-                calculaters[i] = [] # 다 끝났음. 삭제.
-
 #print(waiting_queue)
-stop = -1
+stop = 20
 for i in range(1, Q):
     q = input().split()
+
+    #check_fin(int(q[1])) # 작업종료할게있는지 확인해야지
 
     if q[0] == "200":
         Rule2(q)
@@ -121,14 +116,12 @@ for i in range(1, Q):
     elif q[0] == "500":
         Rule5(q)
 
-    check_fin(int(q[1])) # 작업종료할게있는지 확인해야지
-
     if i == stop:
         print("============= CHECK =============")
         print("command : ", i, q)
         print("TIME : ", q[1])
         print("waiting_queue : ", waiting_queue)
-        print("calculaters : ", calculaters)
+        print("calculaters : ", calculaters[1:])
         print("end_task : ", end_task)
         break
 
