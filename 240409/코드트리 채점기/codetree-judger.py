@@ -101,7 +101,7 @@ def Rule5(q):
     return
 
 #print(waiting_queue)
-stop = 20
+stop = -1
 for i in range(1, Q):
     q = input().split()
 
