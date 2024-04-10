@@ -108,7 +108,6 @@ def UPDATETURRETS():
 
 def ATTACKPATH(attacker, path):
     global matrix, cnt_matrix
-    len_path = len(path)
     cnt_matrix[path[0][0]][path[0][1]] += 1 # 공격자 횟수 추가
     
     score = matrix[attacker[2]-attacker[3]][attacker[3]]
