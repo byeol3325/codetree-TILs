@@ -156,7 +156,7 @@ def BoomPath(attacker, target):
 
 #print("=================================")
 stop = -1
-for k in range(K):
+for k in range(1, K+1):
     if len(turrets) <= 1: # 남은 포탑이 1개 이하면 다 제거
         break
 
