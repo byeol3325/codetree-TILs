@@ -31,8 +31,9 @@ def Rule2(q): # 200 t p u. 대기 큐에 추가하면됨.
         if u == task[2]: # 단 대기 큐에 있는 task는 정확히 u와 일치하는 url이 단 하나라도 존재하면 큐에 추가하지 않고 넘어감
             #print("IN RULE2, SAME TASK IS IN QUEUE.")
             return
-    waiting_queue.append([p, t, u]) # 채점 task는 채점 대기 큐에.
-    waiting_queue.sort()
+    hq.heappush(waiting_queue, [p, t, u])
+    #waiting_queue.append([p, t, u]) # 채점 task는 채점 대기 큐에.
+    #waiting_queue.sort() ###
     return
 
 # rule 3. 채점 시도. t초에 채점 대기 큐에서 즉시 채점이 불가능한 경우를 제외하고 남은 task 중 우선순위가 가장 높은 채점 task를 골라 진행
@@ -65,32 +66,34 @@ def Rule3(q): # 300 t. 채점해도되나 안되나 판별
         return
     
     do = -1
+    hq_waiting_queue = []
+    #print("HERE 0 waiting_queue : ", waiting_queue)
     for i in range(len(waiting_queue)):
-        if waiting_queue[i][2][0] in doing_domains:
-            continue
+        task = hq.heappop(waiting_queue)
+        if task[2][0] in doing_domains:
+            hq.heappush(hq_waiting_queue, task)
         else:
-            if waiting_queue[i][2][0] in end_task:
-                start, end = end_task[waiting_queue[i][2][0]]
-                if t < start + 3*(end-start):
-                    continue
+            if task[2][0] in end_task:
+                start, end = end_task[task[2][0]]
+                if t < start+3*(end-start):
+                    hq.heappush(hq_waiting_queue, task)
                 else:
-                    do = i
+                    do = 1
                     break
             else:
-                do = i; 
-                #print("DO : do, task", do, waiting_queue[i])
+                do = 1
                 break
     
-    if do == -1: #들어갈 작업이 없음
-        return
+    while waiting_queue: # 나머지 다시 넣기
+        hq.heappush(hq_waiting_queue, hq.heappop(waiting_queue))
 
     # 됨. 쉬고 있는 계산기에 들어감
-    #print("HERE 0 waiting_queue : ", waiting_queue)
-    task = waiting_queue[do]
     #print("HERE 0 do, task : ", do, task)
-    waiting_queue = waiting_queue[:do] + waiting_queue[do+1:]
-    task[1] = t # 시작시간
-    calculaters[cal_idx] = task #
+    waiting_queue = hq_waiting_queue
+    #print("HERE 0 next_waiting_queue : ", waiting_queue)
+    if do == 1:
+        task[1] = t # 시작시간
+        calculaters[cal_idx] = task #
     #print("HERE 0", doing_domains, cal_idx, do, task)
     return
 
