@@ -1,6 +1,3 @@
-import sys
-input = sys.stdin.readline
-
 L, Q = map(int, input().split()) # 초밥의 벨트 길이 L, 명령 수 Q
 
 # {위치 : 사람} person:name, n
@@ -21,14 +18,23 @@ def eat():
     if len(seats) == 0:
         return
 
-    for k, v in sushi_belt.items():
-        for i in range(len(v)):
-            if v[i] in seats: # 사람이 앉아 있긴함
+    for k, v in sushi_belt.items(): # {스시 사람이름: 위치}
+        res = []
+        for i in range(len(v)): # 
+            if v[i] in seats: # 자리에 사람이 앉아 있긴함
                 if seats[v[i]].name == k: # 해당자리에 사람이 있음
                     seats[v[i]].eat()
-                    sushi_belt[k] = v[:i] + v[i+1:]
+                    #print("now eat!!!!")
                     if seats[v[i]].n == 0: # 다 먹어서 떠남 ㅠ
                         del seats[v[i]]
+                    continue
+                else: # 다른 사람이라 다시 올려잇!
+                    #print("other person")
+                    res.append(v[i])
+            else: # 사람이 안 앉아 있음
+                #print("no person ")
+                res.append(v[i])   
+        sushi_belt[k] = res
     return
 
 def Rotate(gap):
