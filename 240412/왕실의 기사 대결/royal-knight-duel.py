@@ -5,17 +5,10 @@ import copy
 
 L, N, Q = map(int, input().split()) # L:체스판가로세로, N:기사수, Q:명령수
 
-trap = []
-wall = []
 board = []
 board.append([0]*(L+1))
 for i in range(1, L+1):
     line = list(map(int, input().split()))
-    for j in range(1, L+1):
-        if line[j-1] == 1:
-            trap.append([i,j])
-        elif line[j-1] == 2:
-            wall.append([i,j])
     board.append([0] + line)
 
 knights = {} # i:knight
@@ -76,9 +69,9 @@ def Check(ith, d):
                     #print("ADD : ", board[nr][nc]//10)
                     if board[nr][nc]//10 == mov_ith: # 해당 그 기사 영역이라 무시
                         continue
-                    
-                    q.append(board[nr][nc]//10) # 기사 추가
-                    move_knights[board[nr][nc]//10] = 0
+                    if board[nr][nc]//10 not in move_knights:
+                        q.append(board[nr][nc]//10) # 기사 추가
+                        move_knights[board[nr][nc]//10] = 0
                     #move_knights.add(board[nr][nc]//10) # 기사 추가
             else: # 격자 밖이라 못 움직임
                 #print("OUT!!!!")
@@ -88,8 +81,8 @@ def Check(ith, d):
         #print("GOOD MOVE KNIGHT : ", q)
         if mov_ith != ith:
             move_knights[mov_ith] = damage # 데미지 저장
-        q = set(q) # 중복된 기사들 제거
-        q = deque(q)
+        #q = set(q) # 중복된 기사들 제거
+        #q = deque(q)
         #k+=1
         #if k == 3:
         #    break
@@ -147,8 +140,3 @@ for k, v in knights.items():
         continue
     total_damage += v.damage
 print(total_damage)
-
-
-#print("=============== board : ")
-#for i in range(L+1):
-#    print(board[i])
