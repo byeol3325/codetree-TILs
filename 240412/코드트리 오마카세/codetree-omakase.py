@@ -15,7 +15,7 @@ class person:
 
 def eat():
     global L, seats, sushi_belt
-    if len(seats) == 0:
+    if not seats: #없으면 넘겨
         return
 
     for k, v in sushi_belt.items(): # {스시 사람이름: 위치}
@@ -42,9 +42,7 @@ def Rotate(gap):
     for _ in range(gap):
         for k, v in sushi_belt.items():
             for i in range(len(v)):
-                v[i] += 1
-                if v[i] >= L:
-                    v[i] -= L
+                v[i] = (v[i]+1)%L
         eat()
     return
 
