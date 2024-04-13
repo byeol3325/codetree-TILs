@@ -130,7 +130,7 @@ def Collapse(R, santa, opt):
         if santa.r <= 0 or santa.c <= 0 or santa.r >= N+1 or santa.c >= N+1: #밖임
             santa.out = 1 # 밖이라 out
         elif board[santa.r][santa.c] != 0: # 다른 산타가 있음
-            print("Interact r santa : ", santa.idx)
+            #print("Interact r santa : ", santa.idx)
             Interact(santa, santas[board[santa.r][santa.c]])
         elif board[santa.r][santa.c] == 0: # 산타 없음
             board[santa.r][santa.c] = santa.idx # 산타 이동완료
