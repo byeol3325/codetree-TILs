@@ -41,6 +41,8 @@ def swap_parents(idx1, idx2):
     #print("do swap")
     parent1 = chat_rooms[idx1].parent
     parent2 = chat_rooms[idx2].parent
+    if parent1 == parent2:
+        return
     chat_rooms[idx1].parent = parent2
     chat_rooms[idx2].parent = parent1
 
@@ -52,7 +54,7 @@ def count_notifiable(idx):
     global chat_rooms, N
     count = 0
     
-    if chat_rooms[idx].nodes == []: # nodes가 없음
+    if len(chat_rooms[idx].nodes) == 0: # nodes가 없음
         print(count)
         return
 
@@ -82,9 +84,8 @@ def count_notifiable(idx):
 
 #parents_authorities = list(map(int, input().split())) # 100 p1 p2 ... pN a1 a2 ... aN
 
-
-stop = -1
-show_chat_rooms = 0
+#stop = -1
+#show_chat_rooms = 1
 for i in range(1, Q+1):
     q = list(map(int, input().split()))
     #if stop == i:
