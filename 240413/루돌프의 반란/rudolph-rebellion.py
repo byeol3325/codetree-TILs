@@ -155,18 +155,27 @@ def Collapse(R, santa, opt):
 
 def Interact(s1, s2):
     # 상호작용 (s1이 와서 s2를 침)
-    global dr, dc, board, N, OUT_
+    global dr, dc, board, N, OUT_, m, R, santas
     d = s1.d
     s2.r += dr[d]; s2.c += dc[d];
+    s2.d = d
     board[s1.r][s1.c] = s1.idx # 1이 2 자리를 먹음
     if s2.r <= 0 or s2.c <= 0 or s2.r >= N+1 or s2.c >= N+1: #밖임
         s2.out = 1
         OUT_ += 1
-    elif board[s2.r][s2.c] != 0: # 다른 산타가 있음
+    elif board[s2.r][s2.c] > 0: # 다른 산타가 있음
         #board[s2.r][s2.c] = s2.idx # 다른 산타가 앉음
         Interact(s2, santas[board[s2.r][s2.c]])
     elif board[s2.r][s2.c] == 0: # 산타가 없음
         board[s2.r][s2.c] = s2.idx # 산타 이동 완료
+    else: # 루돌프가 있는데 흠
+        #print("Interact rodulf ??? ")
+        #print("rodulf info : ", R.getInfo())
+        #print("santa info : ", s1.getInfo())
+        #print("santa info : ", s2.getInfo())
+        #print("board  : ")
+        #for i in range(1, N+1):
+        #    print(board[i][1:])
     return
 
 def GetBonus():
