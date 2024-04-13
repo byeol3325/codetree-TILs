@@ -169,6 +169,7 @@ def Interact(s1, s2):
     elif board[s2.r][s2.c] == 0: # 산타가 없음
         board[s2.r][s2.c] = s2.idx # 산타 이동 완료
     else: # 루돌프가 있는데 흠
+        pass
         #print("Interact rodulf ??? ")
         #print("rodulf info : ", R.getInfo())
         #print("santa info : ", s1.getInfo())
