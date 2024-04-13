@@ -164,7 +164,7 @@ def Interact(s1, s2):
         OUT_ += 1
     elif board[s2.r][s2.c] != 0: # 다른 산타가 있음
         #board[s2.r][s2.c] = s2.idx # 다른 산타가 앉음
-        Interact(s2, board[s2.r][s2.c])
+        Interact(s2, santas[board[s2.r][s2.c]])
     elif board[s2.r][s2.c] == 0: # 산타가 없음
         board[s2.r][s2.c] = s2.idx # 산타 이동 완료
     return
