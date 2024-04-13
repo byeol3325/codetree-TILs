@@ -8,7 +8,7 @@ class ChatRoom:
         self.parent = parent
         self.authority = authority
         self.alarm = alarm
-        self.nodes = nodes if nodes is not None else []
+        self.nodes = nodes if nodes is not None else set()
 
     def turn_ONOFF(self):
         self.alarm = not self.alarm
@@ -17,11 +17,11 @@ class ChatRoom:
         self.authority = p
     
     def get_nodes(self, n):
-        self.nodes.append(n)
+        self.nodes.add(n)
     
     def change_node(self, node, new_node):
         self.nodes.remove(node)
-        self.nodes.append(new_node)
+        self.nodes.add(new_node)
     
     def getINFO(self):
         return [self.parent, self.authority, self.alarm, self.nodes]
@@ -87,12 +87,12 @@ stop = -1
 show_chat_rooms = 0
 for i in range(1, Q+1):
     q = list(map(int, input().split()))
-    if stop == i:
-        print("TURN : ", i, q)
-        print("Before : ")
-        if show_chat_rooms == 1:
-            for c in range(1, N+1):
-                print(c, "chat room info(parent, power, alarm, nodes) : ", chat_rooms[c].getINFO())
+    #if stop == i:
+    #    print("TURN : ", i, q)
+    #    print("Before : ")
+    #    if show_chat_rooms == 1:
+    #        for c in range(1, N+1):
+    #            print(c, "chat room info(parent, power, alarm, nodes) : ", chat_rooms[c].getINFO())
 
     if q[0] == 100: # 100 p1 p2 ... pN a1 a2 ... aN
         build_tree(q)
@@ -105,9 +105,9 @@ for i in range(1, Q+1):
     else: # 500 c
         count_notifiable(q[1])
     
-    if stop == i:
-        print("After : ")
-        if show_chat_rooms == 1:
-            for c in range(1, N+1):
-                print(c, "chat room info(parent, power, alarm, nodes) : ", chat_rooms[c].getINFO())
-        break
+    #if stop == i:
+    #    print("After : ")
+    #    if show_chat_rooms == 1:
+    #        for c in range(1, N+1):
+    #            print(c, "chat room info(parent, power, alarm, nodes) : ", chat_rooms[c].getINFO())
+    #    break
