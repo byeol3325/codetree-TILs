@@ -50,6 +50,43 @@ def swap_parents(idx1, idx2):
     chat_rooms[parent2].change_node(idx2, idx1)
     return
 
+def count_notifiable2(idx):
+    global chat_rooms, N
+    count = 0
+    for i in range(1, N+1):
+        if i == idx:
+            continue
+        depth = 1
+        power = chat_rooms[i].authority
+        node = chat_rooms[i].parent
+        #print("now start node idx, i: ", idx, i)
+        if chat_rooms[i].alarm == False:
+            continue
+
+        while True:
+            if node == idx and depth <= power:
+                #print("*** node linked to idx : ", i)
+                count += 1
+                break
+
+            if node == None:
+                #print("not linked to idx : ", i)
+                break
+            
+            if chat_rooms[node].alarm == False:
+                #print("not linked to idx : ", i)
+                break
+            
+            if chat_rooms[node].parent == None:
+                #print("not linked to idx : ", i)
+                break
+            
+            node = chat_rooms[node].parent
+            depth += 1
+    print(count)
+    return
+            
+
 def count_notifiable(idx):
     global chat_rooms, N
     count = 0
@@ -84,7 +121,7 @@ def count_notifiable(idx):
 
 #parents_authorities = list(map(int, input().split())) # 100 p1 p2 ... pN a1 a2 ... aN
 
-#stop = -1
+stop = -1
 #show_chat_rooms = 1
 for i in range(1, Q+1):
     q = list(map(int, input().split()))
@@ -104,11 +141,11 @@ for i in range(1, Q+1):
     elif q[0] == 400: # 400 c1 c2
         swap_parents(q[1], q[2])
     else: # 500 c
-        count_notifiable(q[1])
+        count_notifiable2(q[1])
     
-    #if stop == i:
+    if stop == i:
     #    print("After : ")
     #    if show_chat_rooms == 1:
     #        for c in range(1, N+1):
     #            print(c, "chat room info(parent, power, alarm, nodes) : ", chat_rooms[c].getINFO())
-    #    break
+        break
