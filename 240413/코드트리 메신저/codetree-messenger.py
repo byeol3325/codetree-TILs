@@ -62,32 +62,23 @@ def count_notifiable(idx):
     
     depth = 1
     while True:
-        next_q = deque()
-        while q:
+        same_depth_nodes = len(q)
+        for _ in range(same_depth_nodes):
             node = q.popleft()
             if chat_rooms[node].alarm == False: # 끊겨있음
                 continue
             #print(node, "node info(parent, power, alarm, nodes) : ", chat_rooms[node].getINFO())
             if chat_rooms[node].authority >= depth: # 목소리가 닿음
-                if idx != node:
-                    #print("node can touch idx : ", idx, node)
-                    #print(node, "node info(parent, power, alarm, nodes) : ", chat_rooms[node].getINFO())
-                    count += 1
-            
+                count += 1
             for n in chat_rooms[node].nodes: # 밑에 노드들도 확인
-                next_q.append(n)
-            
-            
+                q.append(n)
         #print("check next_q : ", next_q)
-        if len(next_q) == 0: # 다음에 더 갈게 없음
+        if len(q) == 0: # 다음에 더 갈게 없음
             break
         depth += 1
-        q = next_q
     
     print(count)
     return 
-
-
 
 #parents_authorities = list(map(int, input().split())) # 100 p1 p2 ... pN a1 a2 ... aN
 
