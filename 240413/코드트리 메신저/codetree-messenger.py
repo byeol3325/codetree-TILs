@@ -30,7 +30,10 @@ def build_tree(parents_authorities):
     global chat_rooms, N
     chat_rooms[0] = ChatRoom(None, 1, None) # 메인 채팅방
     for i in range(1, N + 1):
-        chat_rooms[i] = ChatRoom(parents_authorities[i], parents_authorities[i+N])
+        power = parents_authorities[i+N]
+        if power > 20:
+            power = 21
+        chat_rooms[i] = ChatRoom(parents_authorities[i], power)
     
     for i in range(1, N + 1):
         chat_rooms[chat_rooms[i].parent].get_nodes(i)
