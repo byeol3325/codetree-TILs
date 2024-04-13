@@ -155,7 +155,7 @@ def Collapse(R, santa, opt):
 
 def Interact(s1, s2):
     # 상호작용 (s1이 와서 s2를 침)
-    global dr, dc, board, N
+    global dr, dc, board, N, OUT_
     d = s1.d
     s2.r += dr[d]; s2.c += dc[d];
     board[s1.r][s1.c] = s1.idx # 1이 2 자리를 먹음
