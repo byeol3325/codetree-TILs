@@ -25,27 +25,13 @@ CDs = [list(map(int, input().split())) for _ in range(K)] #c_i, d_i K개
 DIRECTION = [[-1, 0], [0, 1], [1, 0], [0, -1]] #북 동 남 서. 시계방향 +1
 BOARD = [[0]*(C+1) for _ in range(R+1)]
 
+RESET_OPT = 0
 class Angel:
     def __init__(self, info):
         self.all_ = [[1, info[0]]] # center + side(북,동,남,서)
         for i in range(4):
             self.all_.append([1+DIRECTION[i][0], info[0]+DIRECTION[i][1]])
         self.outlet = info[1] # direction idx
-    
-    def do_reset(self):
-        global BOARD
-        """
-        check do reset BOARD. If need to reset, do it.
-        
-        Returns:
-          True => do reset
-        """
-        for i in range(5):
-            if BOARD[self.all_[i][0]][self.all_[i][1]] != 0: # 골렘이 자리하고 있음
-                BOARD = [[0]*(C+1) for _ in range(R+1)]
-                #print("RESET BOARD!!!")
-                return True
-        return False
     
     def show_info(self):
         """
@@ -57,12 +43,14 @@ class Angel:
         print("center, outlet : ", self.all_[0], self.outlet)
 
     def move_once(self):
-        global BOARD, R, C
+        global BOARD, R, C, RESET_OPT
         """
         check next mov. self.all_ : center, 북, 동, 서, 남
         Returns:
           0,1,2 => down, left, right
         """
+        RESET_OPT = 0
+        
         # 끝까지 다 움직인 상태
         if self.all_[3][0] == R:
             return False
@@ -118,10 +106,18 @@ class Angel:
         # 움직이기 전 자기자리 비우기
         for i in range(5):
             BOARD[self.all_[i][0]][self.all_[i][1]] = 1
+        
+        if self.all_[1][0] <= 0:
+            RESET_OPT = 1
+            reset_board()
+
         return False
 
-    def get_score(self):
+    def get_score(self, reset_opt=0):
         global DIRECTION, BOARD, R, C
+        if reset_opt == 1:
+            return 0
+
         start = [self.all_[0][0] + DIRECTION[self.outlet][0], self.all_[0][1] + DIRECTION[self.outlet][1]]
         q = deque()
         q.append(start)
@@ -160,6 +156,12 @@ class Angel:
 # get info about Angels
 Angels = [Angel(CDs[i]) for i in range(K)]
 
+def reset_board():
+    global BOARD, R, C
+    BOARD = [[0]*(C+1) for _ in range(R+1)]
+    RESET_OPT = 1
+    return None
+
 def move(angel):
     while True:
         result = angel.move_once()
@@ -176,13 +178,10 @@ def solution(stop=-1):
             break
         angel = Angels[i]
 
-        reset = angel.do_reset()
-        if reset == True:
-            continue
         #print("before angel BOARD : ", i)
         #show_board()
         move(angel)
-        total += angel.get_score()
+        total += angel.get_score(RESET_OPT)
         #print("after angel BOARD : ", i)
         #show_board()
         
@@ -196,8 +195,10 @@ def show_board():
 
 
 #Angels[4].show_info()
-result = solution()
-#Angels[4].show_info()
+show_idx = -1
+#Angels[show_idx-1].show_info()
+result = solution(show_idx)
+#Angels[show_idx-1].show_info()
 #print("SHOW BOARD")
 #show_board()
 print(result)
