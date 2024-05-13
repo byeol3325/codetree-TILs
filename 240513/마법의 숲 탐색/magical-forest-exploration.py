@@ -172,7 +172,7 @@ def solution(stop=-1):
     total = 0
     for i in range(K):
         if stop == i:
-            angel.show_info()
+            #angel.show_info()
             break
         angel = Angels[i]
 
@@ -196,7 +196,7 @@ def show_board():
 
 
 #Angels[4].show_info()
-result = solution(6)
+result = solution()
 #Angels[4].show_info()
 #print("SHOW BOARD")
 #show_board()
