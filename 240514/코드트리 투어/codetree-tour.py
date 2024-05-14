@@ -41,7 +41,7 @@ class Item:
 
     def change_cost(self):
         global START
-        self.cost = get_cost(self.dest)
+        self.cost = get_cost2(self.dest)
         return None
 
 Total_list = {} # id: item, 없애면 item이 아니라 -1로
@@ -51,9 +51,9 @@ from collections import deque
 #using DFS
 def get_cost(dest):
     global N, START, graph
-
     if dest == START:
         return 0
+
     costs = []
     q = deque()
     q.append([START, 0, [0]*(N)]) # [start, cost, [visited_list]]
@@ -66,24 +66,45 @@ def get_cost(dest):
         #print("UWS : ", uws)
         for uw in uws:
             u, w = uw[0], uw[1]
-            if visited[u] == 1:
+            next_visit = visited[:]
+            if next_visit[u] == 1:
                 continue
             else: # not visit
                 new_cost = c + w
                 if u == dest:
                     costs.append(new_cost)
                 else:
-                    q.append([u, new_cost, visited])
+                    q.append([u, new_cost, next_visit])
 
     if len(costs) != 0:
         return min(costs)
     else:
         return float("inf") # 최단 경로 없음
 
+def get_cost2(dest):
+    global N, START, graph
+    if dest == START:
+        return 0
+
+    costs = [float("inf")]*N
+    q = deque()
+    q.append([START, 0])
+    while q:
+        v, c = q.popleft()
+        uws = graph[v]
+        for uw in uws:
+            u, w = uw[0], uw[1]
+            new_cost = c + w
+            if costs[u] > new_cost:
+                costs[u] = new_cost
+                q.append([u, new_cost])
+
+    return costs[dest]
+
 def Rule2(q):
     global N, graph, Total_list, START
     id_, revenue, dest = q[1], q[2], q[3]
-    cost = get_cost(dest)
+    cost = get_cost2(dest)
     item = Item(id_, revenue, dest, cost)
     Total_list[id_] = item
     return None
@@ -110,6 +131,8 @@ def Rule4(q):
     global Total_list
     lists = []
     for k, v in Total_list.items():
+        if v.revenue - v.cost < 0:
+            continue
         lists.append([v.revenue - v.cost, -k])
     lists.sort(reverse=True)
     #print(lists)
