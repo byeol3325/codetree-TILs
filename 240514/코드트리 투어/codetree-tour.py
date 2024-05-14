@@ -87,17 +87,22 @@ def get_cost2(dest):
         return 0
 
     costs = [float("inf")]*N
+    visited = [0] * N
     q = deque()
     q.append([START, 0])
+
     while q:
         v, c = q.popleft()
+        visited[v] = 1 # visit
+        
         uws = graph[v]
         for uw in uws:
             u, w = uw[0], uw[1]
             new_cost = c + w
             if costs[u] > new_cost:
                 costs[u] = new_cost
-                q.append([u, new_cost])
+                if visited[u] == 0:
+                    q.append([u, new_cost])
 
     return costs[dest]
 
