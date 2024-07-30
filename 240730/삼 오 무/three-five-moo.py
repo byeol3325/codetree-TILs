@@ -26,3 +26,5 @@ answer = 0
 answer += 15 * (N//8)
 dict_num = {1:1, 2:2, 3:4, 4:7, 5:8, 6:11, 7:13, 8:14}
 answer += dict_num[N%8]
+
+print(answer)
