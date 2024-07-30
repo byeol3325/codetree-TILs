@@ -8,11 +8,14 @@ def parametric_search(arr: list, m: int):
     right = sum(arr)//m
     n = len(arr)
 
-    Ks = []
+    if right == 0:
+        return 0
+
+    Ks = [0]
     while left < right:
         mid = (left + right) // 2
-        cnt = 0
 
+        cnt = 0
         for i in range(n):
             cnt += arr[i] // mid
         
