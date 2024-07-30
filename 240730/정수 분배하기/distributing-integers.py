@@ -12,7 +12,7 @@ def parametric_search(arr: list, m: int):
         return 0
 
     Ks = [0]
-    while left < right:
+    while left <= right:
         mid = (left + right) // 2
 
         cnt = 0
@@ -27,7 +27,7 @@ def parametric_search(arr: list, m: int):
             left = mid+1
             Ks.append(mid)
         
-    
+    """
     mid = (left + right) // 2
     cnt = 0
     for i in range(n):
@@ -35,7 +35,7 @@ def parametric_search(arr: list, m: int):
 
     if cnt >= m:
         Ks.append(mid)
-    
+    """
     return max(Ks)
 
 
