@@ -23,8 +23,8 @@ right = N*2
 answer = 0
 
 # 1번 풀이
-answer += 15 * (N//8)
+answer += 15 * ((N-1)//8)
 dict_num = {1:1, 2:2, 3:4, 4:7, 5:8, 6:11, 7:13, 8:14}
-answer += dict_num[N%8]
+answer += dict_num[(N-1)%8+1]
 
 print(answer)
