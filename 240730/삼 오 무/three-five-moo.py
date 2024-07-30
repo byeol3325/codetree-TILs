@@ -2,7 +2,7 @@
 N = int(input())
 
 """
-MAX = 10**9
+MAX = 10**9+1
 
 cnt = 0
 for i in range(1, MAX):
