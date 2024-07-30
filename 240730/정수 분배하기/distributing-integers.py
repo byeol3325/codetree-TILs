@@ -4,7 +4,7 @@ for i in range(n):
     arr[i] = int(input())
 
 def parametric_search(arr: list, m: int):
-    left = 1
+    left = 0
     right = sum(arr)//m
     n = len(arr)
 
@@ -33,7 +33,7 @@ def parametric_search(arr: list, m: int):
     for i in range(n):
         cnt += arr[i] // mid
 
-    if cnt == m:
+    if cnt >= m:
         Ks.append(mid)
     
     return max(Ks)
